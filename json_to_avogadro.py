@@ -1,6 +1,7 @@
 import pandas as pd
 import subprocess
 import os
+import shutil
 
 
 print("*** Running Script by Pritish ***")
@@ -29,5 +30,20 @@ for index, row in df.iterrows():
         file.write(str(value))
 print("Files created!")
 
-command = f"avogadro {directory}/*.can"
-subprocess.run(command, shell=True)
+if shutil.which("avogadro"):
+    command = f"avogadro {directory}/*.can"
+    subprocess.run(command, shell=True)
+else:
+    if (
+        shutil.which("flatpak")
+        and subprocess.run(
+            "flatpak list | grep org.openchemistry.Avogadro2",
+            shell=True,
+            stdout=subprocess.DEVNULL,
+        ).returncode
+        == 0
+    ):
+        flatpak_command = f"flatpak run org.openchemistry.Avogadro2 {directory}/*.can"
+        subprocess.run(flatpak_command, shell=True)
+    else:
+        print("Avogadro or Avogadro Flatpak is not available on the system.")
